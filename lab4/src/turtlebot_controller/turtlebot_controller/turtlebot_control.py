@@ -25,7 +25,7 @@ class TurtleBotController(Node):
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
-        self.pub = self.create_publisher(Twist, 'INSERT TOPIC HERE', 10)
+        self.pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.timer = self.create_timer(0.1, self.loop)
 
         self.get_logger().info(
@@ -35,9 +35,22 @@ class TurtleBotController(Node):
 
     def loop(self):
         try:
-            tf = self.tf_buffer.lookup_transform('INSERT_FRAME_HERE', 'INSERT_FRAME_HERE', Time())
+            tf = self.tf_buffer.lookup_transform(self.turtle_frame, self.ar_frame, Time())
+            self.get_logger().info(f"Transform: {tf}")
+            # print(tf)
+            x_err = tf.transform.translation.x
+            y_err = tf.transform.translation.y
 
-            control_cmd = # Generate this
+            #Twist
+            control_cmd = Twist()
+            control_cmd.linear.x = self.K1 * x_err
+            control_cmd.angular.z = self.K2 * y_err
+            # self.get_logger().info(
+            #     f"x_err={x_err:.3f}, y_err={y_err:.3f}, "
+            #     f"v={control_cmd.linear.x:.3f}, w={control_cmd.angular.z:.3f}"
+            # )
+
+            self.pub.publish(control_cmd)
 
         except (TransformException, LookupException, ConnectivityException, ExtrapolationException):
             self.pub.publish(Twist())
