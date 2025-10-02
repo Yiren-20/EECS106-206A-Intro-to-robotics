@@ -93,75 +93,244 @@ def homog_2d(xi, theta):
 #-----------------------------3D Functions--------------------------------------
 #-------------(These are the functions you need to complete)--------------------
 
+
 def skew_3d(omega):
-    """
-    Converts a rotation vector in 3D to its corresponding skew-symmetric matrix.
-    
-    Args:
-    omega - (3,) ndarray: the rotation vector
-    
-    Returns:
-    omega_hat - (3,3) ndarray: the corresponding skew symmetric matrix
+
     """
 
+    Converts a rotation vector in 3D to its corresponding skew-symmetric matrix.
+
+    
+
+    Args:
+
+    omega - (3,) ndarray: the rotation vector
+
+    
+
+    Returns:
+
+    omega_hat - (3,3) ndarray: the corresponding skew symmetric matrix
+
+    """
+
+    
+
+    wx, wy, wz = omega
+
+    return np.array([[0, -wz, wy],
+
+                        [wz, 0, -wx],
+
+                        [-wy, wx, 0]])
+
     # YOUR CODE HERE
+
+
+
 
 def rotation_3d(omega, theta):
-    """
-    Computes a 3D rotation matrix given a rotation axis and angle of rotation.
-    
-    Args:
-    omega - (3,) ndarray: the axis of rotation
-    theta: the angle of rotation
-    
-    Returns:
-    rot - (3,3) ndarray: the resulting rotation matrix
+
     """
 
+    Computes a 3D rotation matrix given a rotation axis and angle of rotation.
+
+    
+
+    Args:
+
+    omega - (3,) ndarray: the axis of rotation
+
+    theta: the angle of rotation
+
+    
+
+    Returns:
+
+    rot - (3,3) ndarray: the resulting rotation matrix
+
+
+    Rodrigues’ formula: R = I + (ω̂/‖ω‖) sin(‖ω‖θ) + (ω̂^2/‖ω‖^2)(1 − cos(‖ω‖θ))
+
+    """
+
+    omega_hat = skew_3d(omega)
+
+    norm_omega = np.linalg.norm(omega)
+
+    if norm_omega == 0:
+
+        return np.eye(3)
+
+    term1 = np.eye(3)
+
+    term2 = (omega_hat / norm_omega) * np.sin(norm_omega * theta)
+
+    term3 = (np.matmul(omega_hat, omega_hat) / (norm_omega ** 2)) * (1 - np.cos(norm_omega * theta))
+
+    return term1 + term2 + term3
+
+  
+
+
     # YOUR CODE HERE
+
+
+
 
 def hat_3d(xi):
-    """
-    Converts a 3D twist to its corresponding 4x4 matrix representation
-    
-    Args:
-    xi - (6,) ndarray: the 3D twist
-    
-    Returns:
-    xi_hat - (4,4) ndarray: the corresponding 4x4 matrix
+
     """
 
+    Converts a 3D twist to its corresponding 4x4 matrix representation
+
+    
+
+    Args:
+
+    xi - (6,) ndarray: the 3D twist
+
+    
+
+    Returns:
+
+    xi_hat - (4,4) ndarray: the corresponding 4x4 matrix
+
+    """
+
+    if not xi.shape == (6,):
+
+        raise TypeError('xi must be a 6-vector')
+
+    omega = xi[3:6]
+
+    v = xi[0:3]
+
+    omega_hat = skew_3d(omega)
+
+    xi_hat = np.zeros((4,4))
+
+    xi_hat[0:3,0:3] = omega_hat
+
+    xi_hat[0:3,3] = v
+
+    return xi_hat   
+
+
+
     # YOUR CODE HERE
+
+
+
 
 def homog_3d(xi, theta):
-    """
-    Computes a 4x4 homogeneous transformation matrix given a 3D twist and a 
-    joint displacement.
-    
-    Args:
-    xi - (6,) ndarray: the 3D twist
-    theta: the joint displacement
-    Returns:
-    g - (4,4) ndarary: the resulting homogeneous transformation matrix
+
     """
 
+    Computes a 4x4 homogeneous transformation matrix given a 3D twist and a 
+
+    joint displacement.
+
+    
+
+    Args:
+
+    xi - (6,) ndarray: the 3D twist
+
+    theta: the joint displacement
+
+    Returns:
+
+    g - (4,4) ndarary: the resulting homogeneous transformation matrix
+
+    """
+
+    if not xi.shape == (6,):
+
+        raise TypeError('xi must be a 6-vector')
+
+    omega = xi[3:6]
+
+    v = xi[0:3]                 
+
+    omega_hat = skew_3d(omega)
+
+    norm_omega = np.linalg.norm(omega)
+
+    if norm_omega == 0:
+
+        R = np.eye(3)
+
+        p = v * theta
+
+    else:               
+
+        R = rotation_3d(omega, theta)
+
+        p = (np.eye(3) * theta + (1 - np.cos(norm_omega * theta)) / (norm_omega ** 2) * omega_hat + (norm_omega * theta - np.sin(norm_omega * theta)) / (norm_omega ** 3) * np.matmul(omega_hat, omega_hat)).dot(v)
+
+    g = np.zeros((4,4))
+
+    g[0:3,0:3] = R
+
+    g[0:3,3] = p
+
+    g[3,3] = 1
+
+    return g                            
+
+
+
+
+
+
     # YOUR CODE HERE
+
+
 
 
 def prod_exp(xi, theta):
-    """
-    Computes the product of exponentials for a kinematic chain, given 
-    the twists and displacements for each joint.
-    
-    Args:
-    xi - (6, N) ndarray: the twists for each joint
-    theta - (N,) ndarray: the displacement of each joint
-    
-    Returns:
-    g - (4,4) ndarray: the resulting homogeneous transformation matrix
+
     """
 
-    # YOUR CODE HERE
+    Computes the product of exponentials for a kinematic chain, given 
+
+    the twists and displacements for each joint.
+
+    
+
+    Args:
+
+    xi - (6, N) ndarray: the twists for each joint
+
+    theta - (N,) ndarray: the displacement of each joint
+
+    
+
+    Returns:
+
+    g - (4,4) ndarray: the resulting homogeneous transformation matrix
+
+    """
+
+    if not xi.shape[0] == 6:
+
+        raise TypeError('xi must have 6 rows')
+
+    if not xi.shape[1] == theta.shape[0]:           
+
+        raise TypeError('xi and theta must have the same number of columns')
+
+    g = np.eye(4)
+
+    for i in range(xi.shape[1]):
+
+        g = np.matmul(g, homog_3d(xi[:,i], theta[i]))
+
+    return g
+
+
+
 
 #---------------------------------TESTING CODE---------------------------------
 #-------------------------DO NOT MODIFY ANYTHING BELOW HERE--------------------
