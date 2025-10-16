@@ -20,6 +20,10 @@ class TablePlane(Node):
         self.declare_parameter('plane.b', 0.0)
         self.declare_parameter('plane.c', 1.0)
         self.declare_parameter('plane.d', 0.0)
+        #...........................................................
+        #You can store also parameters as variables in your node with
+        self.a = self.get_parameter('plane_a').get_parameter_value().double_value
+
 
         self.update_plane_coefficients()
 
