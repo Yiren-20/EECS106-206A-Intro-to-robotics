@@ -16,13 +16,13 @@ class TablePlane(Node):
         self.marker_pub = self.create_publisher(Marker, '/ground_plane_marker', 1)
 
         # Declare parameters for plane coefficients
-        self.declare_parameter('plane.a', 1.00)
+        self.declare_parameter('plane.a', 0.0)
         self.declare_parameter('plane.b', 0.0)
         self.declare_parameter('plane.c', 1.0)
-        self.declare_parameter('plane.d', 0.0)
+        self.declare_parameter('plane.d', 0.5)
         #...........................................................
         #You can store also parameters as variables in your node with
-        self.a = self.get_parameter('plane_a').get_parameter_value().double_value
+        # self.a = self.get_parameter('plane_a').get_parameter_value().double_value
 
 
         self.update_plane_coefficients()

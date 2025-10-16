@@ -3,6 +3,7 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import TransformStamped
 from tf2_ros import StaticTransformBroadcaster
+from scipy.spatial.transform import Rotation as R
 
 import numpy as np
 
@@ -19,11 +20,40 @@ class ConstantTransformPublisher(Node):
             [ 0, 0, 0, 1.0]
         ])
 
-        # Create TransformStamped
+  
+        # Convert rotation matrix to quaternion
+        rot = G[0:3, 0:3]
+        quat = R.from_matrix(rot).as_quat()   # 返回 [x, y, z, w]
+        qx, qy, qz, qw = quat
+      
+      # Create TransformStamped
         self.transform = TransformStamped()
+        self.transform.transform.translation.x = G[0, 3]
+        self.transform.transform.translation.y = G[1, 3]
+        self.transform.transform.translation.z = G[2, 3]
+        self.transform.transform.rotation.x = qx
+        self.transform.transform.rotation.y = qy
+        self.transform.transform.rotation.z = qz
+        self.transform.transform.rotation.w = qw
+        self.transform.header.frame_id = "ar_marker_8"  # [NOTE]: this is hard-coded for this lab station
+        self.transform.child_frame_id = "base_link"
         # ---------------------------
         # TODO: Fill out TransformStamped message
         # --------------------------
+
+        ## MT
+        # self.ar_tag_trans = TransformStamped()
+        # self.transform.transform.translation.x = 
+        # self.transform.transform.translation.y = 
+        # self.transform.transform.translation.z = 
+        # self.transform.transform.rotation.x = qx
+        # self.transform.transform.rotation.y = qy
+        # self.transform.transform.rotation.z = qz
+        # self.transform.transform.rotation.w = qw
+        # self.transform.header.frame_id = "ar_marker_8"  # [NOTE]: this is hard-coded for this lab station
+        # self.transform.child_frame_id = "base_link"
+
+        ##
 
 
         self.timer = self.create_timer(0.05, self.broadcast_tf)
