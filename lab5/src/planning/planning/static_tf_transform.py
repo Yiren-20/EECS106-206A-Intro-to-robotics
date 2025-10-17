@@ -41,19 +41,7 @@ class ConstantTransformPublisher(Node):
         # TODO: Fill out TransformStamped message
         # --------------------------
 
-        ## MT
-        # self.ar_tag_trans = TransformStamped()
-        # self.transform.transform.translation.x = 
-        # self.transform.transform.translation.y = 
-        # self.transform.transform.translation.z = 
-        # self.transform.transform.rotation.x = qx
-        # self.transform.transform.rotation.y = qy
-        # self.transform.transform.rotation.z = qz
-        # self.transform.transform.rotation.w = qw
-        # self.transform.header.frame_id = "ar_marker_8"  # [NOTE]: this is hard-coded for this lab station
-        # self.transform.child_frame_id = "base_link"
 
-        ##
 
 
         self.timer = self.create_timer(0.05, self.broadcast_tf)

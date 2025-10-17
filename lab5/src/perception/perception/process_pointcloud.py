@@ -76,7 +76,7 @@ class RealSensePCSubscriber(Node):
 
         cube_pose = PointStamped()
         # Fill in message
-        cube_pose.header.frame_id = "cube_frame"
+        cube_pose.header.frame_id = "camera_depth_optical_frame"
         cube_pose.header.stamp = self.get_clock().now().to_msg()
         cube_pose.point.x=float(cube_x)
         cube_pose.point.y=float(cube_y)
