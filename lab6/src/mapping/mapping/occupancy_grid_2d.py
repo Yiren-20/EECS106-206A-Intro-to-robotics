@@ -49,7 +49,21 @@ class OccupancyGrid2d(Node):
 
          # Dimensions and bounds.
         # TODO! You'll need to set values for class variables called:
-        # -- self._x_num
+        self.declare_parameter("x/num", 25)
+        self._x_num=self.get_parameter("x/num").value
+        self.declare_parameter("x/min", -10.0)
+        self._x_min=self.get_parameter("x/min").value
+        self.declare_parameter("x/max", 10.0)
+        self._x_max=self.get_parameter("x/max").value
+        self._x_res=(self._x_max - self._x_min)/self._x_num
+        self.declare_parameter("y/num", 25)
+        self._y_num=self.get_parameter("y/num").value
+        self.declare_parameter("y/min", -10.0)
+        self._y_min=self.get_parameter("y/min").value
+        self.declare_parameter("y/max", 10.0)
+        self._y_max=self.get_parameter("y/max").value
+        self._y_res=(self._y_max - self._y_min)/self._y_num
+        # -- self._x_num    
         # -- self._x_min
         # -- self._x_max
         # -- self._x_res # The resolution in x. Note: This isn't a ROS parameter. What will you do instead?
@@ -73,12 +87,18 @@ class OccupancyGrid2d(Node):
 
         # Topics.
         # TODO! You'll need to set values for class variables called:
-        # -- self._sensor_topic
+        self.declare_parameter("topics/sensor", "/scan")
+        self._sensor_topic=self.get_parameter("topics/sensor").value
+        self.declare_parameter("topics/vis", "/vis/map")
+        self._vis_topic=self.get_parameter("topics/vis").value
         # -- self._vis_topic
 
         # Frames.
         # TODO! You'll need to set values for class variables called:
-        # -- self._sensor_frame
+        self.declare_parameter("frames/sensor", "base_link")
+        self._sensor_frame=self.get_parameter("frames/sensor").value
+        self.declare_parameter("frames/fixed", "odom")
+        self._fixed_frame=self.get_parameter("frames/fixed").value
         # -- self._fixed_frame
 
         return True
@@ -129,22 +149,49 @@ class OccupancyGrid2d(Node):
             self.get_logger().warn("Robot not on ground plane.")
         if abs(roll) > 0.1 or abs(pitch) > 0.1:
             self.get_logger().warn("Robot roll/pitch too large.")
-        # Loop over all ranges in the LaserScan.
+        # Loop over all rangeros2 launch turtlebot3_bringup robot.launch.pys in the LaserScan.
         for idx, r in enumerate(msg.ranges):
             if np.random.rand() > self._random_downsample or np.isnan(r):
                 continue
             
             # Get angle of this ray in fixed frame.
             # TODO!
-
+            angle = msg.angle_min + idx * msg.angle_increment + yaw
+            if angle > msg.angle_max or angle < msg.angle_min:
+                continue
             if r > msg.range_max or r < msg.range_min:
                 continue
-
             # Walk along this ray from the scan point to the sensor.
             # Update log-odds at each voxel along the way.
             # Only update each voxel once. 
             # The occupancy grid is stored in self._map
             # TODO!
+            res_norm= np.sqrt((self._x_res)**2+(self._y_res)**2)
+            updated_grid=[]
+            for d in np.arange(0, r, res_norm):
+                x = sensor_x + d * np.cos(angle)
+                y = sensor_y + d * np.sin(angle)
+                i, j = self.point_to_voxel(x, y)
+                if d < r - res_norm:
+                    self._map[i, j] += self._free_update
+                    
+                    if (i,j) not in updated_grid:
+                        updated_grid.append((i,j))
+                    else:
+                        continue
+                    
+                    if self._map[i, j] < self._free_threshold:
+                        self._map[i, j] = self._free_threshold
+                else:
+                    self._map[i, j] += self._occupied_update
+                    if (i,j) not in updated_grid:
+                        updated_grid.append((i,j))
+                    else:
+                        continue
+                    if self._map[i, j] > self._occupied_threshold:
+                        self._map[i, j] = self._occupied_threshold
+    
+
         # Visualize.
         self.visualize()
 
