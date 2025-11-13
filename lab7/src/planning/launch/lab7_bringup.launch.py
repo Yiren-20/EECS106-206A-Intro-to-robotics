@@ -28,21 +28,26 @@ def generate_launch_description():
 
     # Args for perception node
     
+    # A: -0.1383188085182711, B: -0.9869218039475554, C: -0.08278441944586651, D: 0.07161892649501833
     plane_a_launch_arg = DeclareLaunchArgument(
         'plane_a',
-        default_value='0.0'
+        # default_value='0.0'
+        default_value='-0.1383188085182711'
     )
     plane_b_launch_arg = DeclareLaunchArgument(
         'plane_b',
-        default_value='1.0'
+        # default_value='1.0'
+        default_value='-0.9869218039475554'
     )
     plane_c_launch_arg = DeclareLaunchArgument(
         'plane_c',
-        default_value='0.0'
+        # default_value='0.0'
+        default_value='-0.08278441944586651'
     )
     plane_d_launch_arg = DeclareLaunchArgument(
         'plane_d',
-        default_value='-0.075'
+        # default_value='-0.075'
+        default_value='0.07161892649501833'
     )
     plane_a = LaunchConfiguration('plane_a')
     plane_b = LaunchConfiguration('plane_b')
@@ -63,6 +68,22 @@ def generate_launch_description():
             'plane.d': plane_d,
         }]
     )
+    #transformcube_node
+    transform_cube_node= Node(
+        package='planning',
+        executable='transform_cube_pose',
+        name='cube_pose',
+        output='screen',
+        parameters=[],
+    )
+    
+    ik_node = Node(
+        package='planning',
+        executable='ik',
+        name='ik_node',
+        output='screen',
+        parameters=[],
+    )
 
     # ArUco recognition
     aruco_launch = IncludeLaunchDescription(
@@ -77,7 +98,7 @@ def generate_launch_description():
 
     ar_marker_launch_arg = DeclareLaunchArgument(
         'ar_marker',
-        default_value='ar_marker_7'
+        default_value='ar_marker_10'
     )
     ar_marker = LaunchConfiguration('ar_marker')
 
@@ -146,5 +167,7 @@ def generate_launch_description():
         planning_tf_node,
         static_base_world,
         moveit_launch,
-        shutdown_on_any_exit
+        shutdown_on_any_exit,
+        transform_cube_node,
+        ik_node
     ])

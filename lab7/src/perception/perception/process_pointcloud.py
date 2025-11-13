@@ -37,6 +37,37 @@ class RealSensePCSubscriber(Node):
 
         self.get_logger().info("Subscribed to PointCloud2 topic and marker publisher ready")
 
+    # def pointcloud_callback(self, msg: PointCloud2):
+    #     # Convert PointCloud2 to Nx3 array
+    #     points = []
+    #     for p in pc2.read_points(msg, field_names=('x','y','z'), skip_nans=True):
+    #         points.append([p[0], p[1], p[2]])
+
+    #     points = np.array(points)
+    #     # ------------------------
+    #     #TODO: Add your code here!
+    #     # ------------------------
+
+
+    #     # Apply max distance filter
+
+       
+    #     # Apply other filtering relative to plane
+    #     filtered_points = []
+
+    #     # Compute position of the cube via remaining points
+    #     cube_x = 0.0
+    #     cube_y = 0.0
+    #     cube_z = 0.0
+
+    #     self.get_logger().info(f"Filtered points: {filtered_points.shape[0]}")
+
+    #     cube_pose = PointStamped()
+    #     # Fill in message
+
+    #     self.cube_pose_pub.publish(cube_pose)
+
+    #     self.publish_filtered_points(filtered_points, msg.header)
     def pointcloud_callback(self, msg: PointCloud2):
         # Convert PointCloud2 to Nx3 array
         points = []
@@ -45,7 +76,18 @@ class RealSensePCSubscriber(Node):
 
         points = np.array(points)
         # ------------------------
-        #TODO: Add your code here!
+        
+        filtered_points = []
+
+        for pt in points:
+            x, y, z = pt[0], pt[1], pt[2]
+            distance = np.sqrt(x**2 + y**2 + z**2)
+            plane_value = self.a * x + self.b * y + self.c * z + self.d
+            if (distance <= 0.6 and plane_value <= 0):
+                filtered_points.append([x, y, z])
+        filtered_points = np.array(filtered_points)
+        self.get_logger().info(f"Filtered points: {filtered_points.shape[0]}")
+
         # ------------------------
 
 
@@ -53,17 +95,23 @@ class RealSensePCSubscriber(Node):
 
        
         # Apply other filtering relative to plane
-        filtered_points = []
+        n_vec = np.array([self.a, self.b, self.c]).reshape(1,3)
+        pts = list(filter(lambda pt: (n_vec @ pt.reshape(3,1))/(np.linalg.norm(n_vec)**2) < 0.9, filtered_points))
+        filtered_points = np.array(pts)
 
         # Compute position of the cube via remaining points
-        cube_x = 0.0
-        cube_y = 0.0
-        cube_z = 0.0
+        cube_x = np.mean(filtered_points[:, 0])
+        cube_y = np.mean(filtered_points[:, 1])
+        cube_z = np.mean(filtered_points[:, 2])
 
-        self.get_logger().info(f"Filtered points: {filtered_points.shape[0]}")
 
         cube_pose = PointStamped()
         # Fill in message
+        cube_pose.header.frame_id = "camera_depth_optical_frame"
+        cube_pose.header.stamp = self.get_clock().now().to_msg()
+        cube_pose.point.x=float(cube_x)
+        cube_pose.point.y=float(cube_y)
+        cube_pose.point.z=float(cube_z)
 
         self.cube_pose_pub.publish(cube_pose)
 

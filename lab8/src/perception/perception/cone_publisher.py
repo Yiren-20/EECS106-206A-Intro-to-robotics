@@ -42,23 +42,32 @@ class ImageSubscriber(Node):
                 for i, mask in enumerate(masks):
 
                     # TODO: Get number of pixels in mask
-                    pixel_count = 0. 
+                    # step 1: count pixels
+                    pixel_count = np.sum(mask > 0)
 
+                    # A_{real} given in square meters
                     CONE_AREA = 0.0208227849
 
                     # TODO: Get depth of image 
-                    depth = 0.
+                    # step 2: compute depth
+                    depth = np.sqrt(self.camera_intrinsics['fx'] * self.camera_intrinsics['fy'] * CONE_AREA / pixel_count)
 
                     self.get_logger().info(f'Cone {i+1}: depth={depth:.3f}m')
 
 
                     # TODO: Get u, and v of cone in image coordinates
-                    u, v = 0.
+                    # step 3: find pixel center
+                    u = 0
+                    v = 0
+                    ys, xs = np.where(mask > 0)
+                    u = np.mean(xs)
+                    v = np.mean(ys)
 
                     # TODO: Find X , Y , Z of cone
-                    X = 0.
-                    Y = 0.
-                    Z = 0. 
+                    # step 4: convert to camera coordinates
+                    X = (u-self.camera_intrinsics['cx'])*depth/self.camera_intrinsics['fx']
+                    Y = (v-self.camera_intrinsics['cy'])*depth/self.camera_intrinsics['fy']
+                    Z = depth
 
                     # Convert to turtlebot frame
                     # There's no camera frame for the turtlebots, so we just do this instead 
@@ -83,6 +92,11 @@ class ImageSubscriber(Node):
         # -------------------------------------------
         # TODO: Extract camera intrinsic parameters! 
         # -------------------------------------------
+        self.camera_intrinsics = {}
+        self.camera_intrinsics['fx'] = msg.k[0]
+        self.camera_intrinsics['fy'] = msg.k[4]
+        self.camera_intrinsics['cx'] = msg.k[2]
+        self.camera_intrinsics['cy'] = msg.k[5]
         self.get_logger().info("Recieved Camera Info")
         
 
