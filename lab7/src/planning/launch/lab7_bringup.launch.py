@@ -32,22 +32,25 @@ def generate_launch_description():
     plane_a_launch_arg = DeclareLaunchArgument(
         'plane_a',
         # default_value='0.0'
-        default_value='-0.1383188085182711'
+        # default_value='0.015377132520637958'
+        default_value='0.0'
     )
     plane_b_launch_arg = DeclareLaunchArgument(
         'plane_b',
         # default_value='1.0'
-        default_value='-0.9869218039475554'
+        default_value='0.9992937271960843'
     )
     plane_c_launch_arg = DeclareLaunchArgument(
         'plane_c',
         # default_value='0.0'
-        default_value='-0.08278441944586651'
+        # default_value='0.03653863014429065'
+        default_value='0.1239079281658973'
     )
     plane_d_launch_arg = DeclareLaunchArgument(
         'plane_d',
         # default_value='-0.075'
-        default_value='0.07161892649501833'
+        # default_value='-0.07200981472717885'
+        default_value='-0.08194036378063227'
     )
     plane_a = LaunchConfiguration('plane_a')
     plane_b = LaunchConfiguration('plane_b')
@@ -98,7 +101,7 @@ def generate_launch_description():
 
     ar_marker_launch_arg = DeclareLaunchArgument(
         'ar_marker',
-        default_value='ar_marker_10'
+        default_value='ar_marker_8'
     )
     ar_marker = LaunchConfiguration('ar_marker')
 

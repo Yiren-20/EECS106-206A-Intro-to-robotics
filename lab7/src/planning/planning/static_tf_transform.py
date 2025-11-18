@@ -11,7 +11,7 @@ class ConstantTransformPublisher(Node):
         super().__init__('constant_tf_publisher')
         self.br = StaticTransformBroadcaster(self)
 
-        self.declare_parameter('ar_marker', 'ar_marker_10')
+        self.declare_parameter('ar_marker', 'ar_marker_8')
         marker = self.get_parameter('ar_marker').get_parameter_value().string_value
 
         # Homogeneous transform G_ar->base_link
@@ -35,7 +35,7 @@ class ConstantTransformPublisher(Node):
         self.transform.transform.rotation.y = qy
         self.transform.transform.rotation.z = qz
         self.transform.transform.rotation.w = qw
-        self.transform.header.frame_id = "ar_marker_10"  # [NOTE]: this is hard-coded for this lab station
+        self.transform.header.frame_id = "ar_marker_8"  # [NOTE]: this is hard-coded for this lab station
         self.transform.child_frame_id = "base_link"
         # ---------------------------
         # TODO: Fill out TransformStamped message
@@ -59,6 +59,9 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
 
 
 
